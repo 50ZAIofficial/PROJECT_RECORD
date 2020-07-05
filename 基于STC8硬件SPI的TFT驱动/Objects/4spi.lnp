@@ -1,0 +1,6 @@
+".\Objects\STARTUP.obj",
+".\Objects\lcd.obj",
+".\Objects\lcd_init.obj",
+".\Objects\main.obj" 
+TO ".\Objects\4spi" 
+PRINT(".\Listings\4spi.m51") RAMSIZE(256) 

@@ -1,0 +1,273 @@
+C51 COMPILER V9.00   LCD_INIT                                                              07/04/2020 23:10:46 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE LCD_INIT
+OBJECT MODULE PLACED IN .\Objects\lcd_init.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE lcd_init.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Lis
+                    -tings\lcd_init.lst) OBJECT(.\Objects\lcd_init.obj)
+
+line level    source
+
+   1          #include "lcd_init.h"
+   2          #include "REG52.h"
+   3          #include "intrins.h"
+   4          
+   5          
+   6          
+   7          void SpiInt()
+   8          {
+   9   1          LCD_CS = 1;
+  10   1          SPDAT=0;//数据寄存器清0
+  11   1          SPCTL=0xDC|4;//1101 11xx 主模式,使能,先传数据最高位,前时钟为下降沿,并在下降沿驱动数据,上升沿检测数据
+  12   1          SPSTAT = 0xc0;                              //清中断标志
+  13   1      //    IE2 = ESPI;                                 //使能SPI中断
+  14   1      //    EA = 1;
+  15   1          LED=!LED;
+  16   1      }
+  17          
+  18          //不准确延时函数
+  19          void delay_ms(unsigned int ms)
+  20          {                         
+  21   1              unsigned int a;
+  22   1              while(ms)
+  23   1              {
+  24   2                      a=1800;
+  25   2                      while(a--);
+  26   2                      ms--;
+  27   2              }
+  28   1      }
+  29          
+  30          
+  31          /******************************************************************************
+  32                函数说明：LCD串行数据写入函数
+  33                入口数据：dat  要写入的串行数据
+  34                返回值：  无
+  35          ******************************************************************************/
+  36          
+  37          void LCD_Writ_Bus(u8 dat) 
+  38          {       
+  39   1          LCD_CS = 0;                            //拉低从机SS管脚
+  40   1      
+  41   1          SPDAT = dat;                           //发送
+  42   1          while (!(SPSTAT & 0x80));               //查询完成标志
+  43   1          SPSTAT = 0xc0;                          //清中断标志
+  44   1          LCD_CS = 1; 
+  45   1      }
+  46          
+  47          
+  48          /******************************************************************************
+  49                函数说明：LCD写入数据
+  50                入口数据：dat 写入的数据
+  51                返回值：  无
+  52          ******************************************************************************/
+  53          void LCD_WR_DATA8(u8 dat)
+  54          {
+C51 COMPILER V9.00   LCD_INIT                                                              07/04/2020 23:10:46 PAGE 2   
+
+  55   1              LCD_Writ_Bus(dat);
+  56   1      }
+  57          
+  58          
+  59          /******************************************************************************
+  60                函数说明：LCD写入数据
+  61                入口数据：dat 写入的数据
+  62                返回值：  无
+  63          ******************************************************************************/
+  64          void LCD_WR_DATA(u16 dat)
+  65          {
+  66   1              LCD_Writ_Bus(dat>>8);
+  67   1              LCD_Writ_Bus(dat);
+  68   1      }
+  69          
+  70          
+  71          /******************************************************************************
+  72                函数说明：LCD写入命令
+  73                入口数据：dat 写入的命令
+  74                返回值：  无
+  75          ******************************************************************************/
+  76          void LCD_WR_REG(u8 dat)
+  77          {
+  78   1              LCD_DC_Clr();//写命令
+  79   1              LCD_Writ_Bus(dat);
+  80   1              LCD_DC_Set();//写数据
+  81   1      }
+  82          
+  83          
+  84          /******************************************************************************
+  85                函数说明：设置起始和结束地址
+  86                入口数据：x1,x2 设置列的起始和结束地址
+  87                          y1,y2 设置行的起始和结束地址
+  88                返回值：  无
+  89          ******************************************************************************/
+  90          void LCD_Address_Set(u16 x1,u16 y1,u16 x2,u16 y2)
+  91          {
+  92   1              if(USE_HORIZONTAL==0)
+  93   1              {
+  94   2                      LCD_WR_REG(0x2a);//列地址设置
+  95   2                      LCD_WR_DATA(x1+2);
+  96   2                      LCD_WR_DATA(x2+2);
+  97   2                      LCD_WR_REG(0x2b);//行地址设置
+  98   2                      LCD_WR_DATA(y1+1);
+  99   2                      LCD_WR_DATA(y2+1);
+ 100   2                      LCD_WR_REG(0x2c);//储存器写
+ 101   2              }
+ 102   1              else if(USE_HORIZONTAL==1)
+ 103   1              {
+ 104   2                      LCD_WR_REG(0x2a);//列地址设置
+ 105   2                      LCD_WR_DATA(x1+2);
+ 106   2                      LCD_WR_DATA(x2+2);
+ 107   2                      LCD_WR_REG(0x2b);//行地址设置
+ 108   2                      LCD_WR_DATA(y1+1);
+ 109   2                      LCD_WR_DATA(y2+1);
+ 110   2                      LCD_WR_REG(0x2c);//储存器写
+ 111   2              }
+ 112   1              else if(USE_HORIZONTAL==2)
+ 113   1              {
+ 114   2                      LCD_WR_REG(0x2a);//列地址设置
+ 115   2                      LCD_WR_DATA(x1+1);
+ 116   2                      LCD_WR_DATA(x2+1);
+C51 COMPILER V9.00   LCD_INIT                                                              07/04/2020 23:10:46 PAGE 3   
+
+ 117   2                      LCD_WR_REG(0x2b);//行地址设置
+ 118   2                      LCD_WR_DATA(y1+2);
+ 119   2                      LCD_WR_DATA(y2+2);
+ 120   2                      LCD_WR_REG(0x2c);//储存器写
+ 121   2              }
+ 122   1              else
+ 123   1              {
+ 124   2                      LCD_WR_REG(0x2a);//列地址设置
+ 125   2                      LCD_WR_DATA(x1+1);
+ 126   2                      LCD_WR_DATA(x2+1);
+ 127   2                      LCD_WR_REG(0x2b);//行地址设置
+ 128   2                      LCD_WR_DATA(y1+2);
+ 129   2                      LCD_WR_DATA(y2+2);
+ 130   2                      LCD_WR_REG(0x2c);//储存器写
+ 131   2              }
+ 132   1      }
+ 133          
+ 134          
+ 135          /******************************************************************************
+ 136                函数说明：LCD初始化函数
+ 137                入口数据：无
+ 138                返回值：  无
+ 139          ******************************************************************************/
+ 140          void Lcd_Init(void)
+ 141          {
+ 142   1              LCD_RES_Clr();
+ 143   1              delay_ms(100);
+ 144   1              LCD_RES_Set();
+ 145   1              delay_ms(100);
+ 146   1              LCD_BLK_Set();
+ 147   1              delay_ms(100);
+ 148   1              //************* Start Initial Sequence **********//
+ 149   1              LCD_WR_REG(0x11); //Sleep out 
+ 150   1              delay_ms(120);              //Delay 120ms 
+ 151   1              //------------------------------------ST7735S Frame Rate-----------------------------------------// 
+ 152   1              LCD_WR_REG(0xB1); 
+ 153   1              LCD_WR_DATA8(0x05); 
+ 154   1              LCD_WR_DATA8(0x3C); 
+ 155   1              LCD_WR_DATA8(0x3C); 
+ 156   1              LCD_WR_REG(0xB2); 
+ 157   1              LCD_WR_DATA8(0x05);
+ 158   1              LCD_WR_DATA8(0x3C); 
+ 159   1              LCD_WR_DATA8(0x3C); 
+ 160   1              LCD_WR_REG(0xB3); 
+ 161   1              LCD_WR_DATA8(0x05); 
+ 162   1              LCD_WR_DATA8(0x3C); 
+ 163   1              LCD_WR_DATA8(0x3C); 
+ 164   1              LCD_WR_DATA8(0x05); 
+ 165   1              LCD_WR_DATA8(0x3C); 
+ 166   1              LCD_WR_DATA8(0x3C); 
+ 167   1              //------------------------------------End ST7735S Frame Rate---------------------------------// 
+ 168   1              LCD_WR_REG(0xB4); //Dot inversion 
+ 169   1              LCD_WR_DATA8(0x03); 
+ 170   1              //------------------------------------ST7735S Power Sequence---------------------------------// 
+ 171   1              LCD_WR_REG(0xC0); 
+ 172   1              LCD_WR_DATA8(0x28); 
+ 173   1              LCD_WR_DATA8(0x08); 
+ 174   1              LCD_WR_DATA8(0x04); 
+ 175   1              LCD_WR_REG(0xC1); 
+ 176   1              LCD_WR_DATA8(0XC0); 
+ 177   1              LCD_WR_REG(0xC2); 
+ 178   1              LCD_WR_DATA8(0x0D); 
+C51 COMPILER V9.00   LCD_INIT                                                              07/04/2020 23:10:46 PAGE 4   
+
+ 179   1              LCD_WR_DATA8(0x00); 
+ 180   1              LCD_WR_REG(0xC3); 
+ 181   1              LCD_WR_DATA8(0x8D); 
+ 182   1              LCD_WR_DATA8(0x2A); 
+ 183   1              LCD_WR_REG(0xC4); 
+ 184   1              LCD_WR_DATA8(0x8D); 
+ 185   1              LCD_WR_DATA8(0xEE); 
+ 186   1              //---------------------------------End ST7735S Power Sequence-------------------------------------// 
+ 187   1              LCD_WR_REG(0xC5); //VCOM 
+ 188   1              LCD_WR_DATA8(0x1A); 
+ 189   1              LCD_WR_REG(0x36); //MX, MY, RGB mode 
+ 190   1              if(USE_HORIZONTAL==0)LCD_WR_DATA8(0x00);
+ 191   1              else if(USE_HORIZONTAL==1)LCD_WR_DATA8(0xC0);
+ 192   1              else if(USE_HORIZONTAL==2)LCD_WR_DATA8(0x70);
+ 193   1              else LCD_WR_DATA8(0xA0); 
+ 194   1              //------------------------------------ST7735S Gamma Sequence---------------------------------// 
+ 195   1              LCD_WR_REG(0xE0); 
+ 196   1              LCD_WR_DATA8(0x04); 
+ 197   1              LCD_WR_DATA8(0x22); 
+ 198   1              LCD_WR_DATA8(0x07); 
+ 199   1              LCD_WR_DATA8(0x0A); 
+ 200   1              LCD_WR_DATA8(0x2E); 
+ 201   1              LCD_WR_DATA8(0x30); 
+ 202   1              LCD_WR_DATA8(0x25); 
+ 203   1              LCD_WR_DATA8(0x2A); 
+ 204   1              LCD_WR_DATA8(0x28); 
+ 205   1              LCD_WR_DATA8(0x26); 
+ 206   1              LCD_WR_DATA8(0x2E); 
+ 207   1              LCD_WR_DATA8(0x3A); 
+ 208   1              LCD_WR_DATA8(0x00); 
+ 209   1              LCD_WR_DATA8(0x01); 
+ 210   1              LCD_WR_DATA8(0x03); 
+ 211   1              LCD_WR_DATA8(0x13); 
+ 212   1              LCD_WR_REG(0xE1); 
+ 213   1              LCD_WR_DATA8(0x04); 
+ 214   1              LCD_WR_DATA8(0x16); 
+ 215   1              LCD_WR_DATA8(0x06); 
+ 216   1              LCD_WR_DATA8(0x0D); 
+ 217   1              LCD_WR_DATA8(0x2D); 
+ 218   1              LCD_WR_DATA8(0x26); 
+ 219   1              LCD_WR_DATA8(0x23); 
+ 220   1              LCD_WR_DATA8(0x27); 
+ 221   1              LCD_WR_DATA8(0x27); 
+ 222   1              LCD_WR_DATA8(0x25); 
+ 223   1              LCD_WR_DATA8(0x2D); 
+ 224   1              LCD_WR_DATA8(0x3B); 
+ 225   1              LCD_WR_DATA8(0x00); 
+ 226   1              LCD_WR_DATA8(0x01); 
+ 227   1              LCD_WR_DATA8(0x04); 
+ 228   1              LCD_WR_DATA8(0x13); 
+ 229   1              //------------------------------------End ST7735S Gamma Sequence-----------------------------// 
+ 230   1              LCD_WR_REG(0x3A); //65k mode 
+ 231   1              LCD_WR_DATA8(0x05); 
+ 232   1              LCD_WR_REG(0x29); //Display on 
+ 233   1      }
+ 234          
+ 235          
+ 236          
+ 237          
+ 238          
+ 239          
+ 240          
+C51 COMPILER V9.00   LCD_INIT                                                              07/04/2020 23:10:46 PAGE 5   
+
+ 241          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    509    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       8
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

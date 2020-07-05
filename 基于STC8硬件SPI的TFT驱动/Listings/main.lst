@@ -1,0 +1,119 @@
+C51 COMPILER V9.00   MAIN                                                                  07/04/2020 23:10:46 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\main.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          //////////////////////////////////////////////////////////////////////////////////       
+   2          //本程序只供学习使用，未经作者许可，不得用于其它任何用途
+   3          //中景园电子
+   4          //店铺地址：http://shop73023976.taobao.com/?spm=2013.1.0.0.M4PqC2
+   5          //
+   6          //  文 件 名   : main.c
+   7          //  版 本 号   : v2.0
+   8          //  作    者   : HuangKai
+   9          //  生成日期   : 2014-0101
+  10          //  最近修改   : 
+  11          //  功能描述   : OLED 4接口演示例程(51系列)
+  12          //              说明: 
+  13          //              ----------------------------------------------------------------
+  14          //              GND    电源地
+  15          //              VCC  3.3v电源
+  16          //              SCL  P10（SCLK）
+  17          //              SDA  P11（MOSI）
+  18          //              RES  P12
+  19          //              DC   P13
+  20          //              CS   P14 
+  21          //              BLK  P15
+  22          //              ----------------------------------------------------------------
+  23          // 修改历史   :
+  24          // 日    期   : 
+  25          // 作    者   : HuangKai
+  26          // 修改内容   : 创建文件
+  27          //版权所有，盗版必究。
+  28          //Copyright(C) 中景园电子2014/3/16
+  29          //All rights reserved
+  30          //******************************************************************************/
+  31          #include "REG52.h"
+  32          #include "lcd_init.h"
+  33          #include "lcd.h"
+  34          #include "pic.h"
+  35          #include "intrins.h"
+  36          //sfr     P_SW1       =   0xa2;
+  37          sfr     P2M0        =   0x96;
+  38          sfr     P2M1        =   0x95;
+  39          sfr     P_SW1       =   0xa2;
+  40          
+  41          unsigned int iii,ii;
+  42          bit shift;
+  43          
+  44          /*void SPI_Isr() interrupt 9
+  45          {
+  46              SPSTAT = 0xc0;                              //清中断标志
+  47          }*/
+  48          
+  49          int main(void)
+  50          {
+  51   1          float t;
+  52   1          P_SW1 = 0x04;                               //SS_2/P2.2, MOSI_2/P2.3, MISO_2/P2.4, SCLK_2/P2.5
+  53   1          P2M0=0xff;
+  54   1          P2M1=0x00;
+C51 COMPILER V9.00   MAIN                                                                  07/04/2020 23:10:46 PAGE 2   
+
+  55   1          LED=0;
+  56   1      //    P_SW1 = 0x04;              //SS_2/P2.2, MOSI_2/P2.3, MISO_2/P2.4, SCLK_2/P2.5
+  57   1      
+  58   1      //    IE2 = ESPI;                                 //使能SPI中断
+  59   1      //    EA = 1;
+  60   1      
+  61   1          iii=0;ii=0;
+  62   1          LED=1;
+  63   1          t=0;
+  64   1          SpiInt();
+  65   1              LCD_Init();//LCD初始化
+  66   1              LCD_Fill(0,0,LCD_W,LCD_H,WHITE);
+  67   1              while(1)
+  68   1              {
+  69   2              iii=0;ii=0;
+  70   2      //              LCD_ShowChinese(0,0,"中景园电子",RED,WHITE,24,0);
+  71   2      //              LCD_ShowString(24,30,"LCD_W:",RED,WHITE,16,0);
+  72   2      //              LCD_ShowIntNum(72,30,LCD_W,3,RED,WHITE,16);
+  73   2      //              LCD_ShowString(24,50,"LCD_H:",RED,WHITE,16,0);
+  74   2      //              LCD_ShowIntNum(72,50,LCD_H,3,RED,WHITE,16);
+  75   2      //              LCD_ShowFloatNum1(20,80,t,4,RED,WHITE,16);
+  76   2      //              t+=0.11;
+  77   2              for(iii=0;iii<5;iii++)
+  78   2                  {
+  79   3                  for(ii=0;ii<4;ii++)
+  80   3                          {LCD_ShowPicture(32*ii,32*iii,32,32,gImage_baiyu);}
+  81   3                  }
+  82   2              for(iii=0;iii<5;iii++)
+  83   2                  {
+  84   3                  for(ii=0;ii<4;ii++)
+  85   3                          {LCD_ShowPicture(32*ii,32*iii,32,32,gImage_ff);}
+  86   3                  }
+  87   2      //              LCD_ShowPicture(0,65,40,64,gImage_FF);
+  88   2      //              LCD_ShowPicture(0,127,40,64,gImage_FF);
+  89   2               LED=!LED;
+  90   2              }
+  91   1      }
+  92          
+  93                  
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    373    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   4116       4
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
