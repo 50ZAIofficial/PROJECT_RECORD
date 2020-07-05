@@ -1,0 +1,4 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj" 
+TO ".\Objects\FSMcode" 
+PRINT(".\Listings\FSMcode.m51")

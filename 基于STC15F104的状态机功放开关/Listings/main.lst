@@ -1,0 +1,222 @@
+C51 COMPILER V9.00   MAIN                                                                  07/02/2020 12:28:29 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include"intrins.h"
+   3          
+   4          sfr P3M1 = 0xb1;
+   5          sfr P3M0 = 0xb2;
+   6          sbit P31=P3^1;
+   7          sbit P33=P3^3;
+   8          sbit P32=P3^2;
+   9          sbit INA=P3^5;
+  10          sbit INB=P3^4;
+  11          sbit RESET=P3^0;
+  12          bit warning;
+  13          bit first,final;
+  14          
+  15          //-----------------------------------------
+  16          //延时50ms
+  17          void Delay50ms()                //@6.000MHz
+  18          {
+  19   1              unsigned char i, j, k;
+  20   1      
+  21   1              _nop_();
+  22   1              _nop_();
+  23   1              i = 2;
+  24   1              j = 36;
+  25   1              k = 206;
+  26   1              do
+  27   1              {
+  28   2                      do
+  29   2                      {
+  30   3                              while (--k);
+  31   3                      } while (--j);
+  32   2              } while (--i);
+  33   1      }
+  34          
+  35          //-----------------------------------------
+  36          //延时1000ms
+  37          void Delay1000ms()              //@6.000MHz
+  38          {
+  39   1              unsigned char i, j, k;
+  40   1      
+  41   1              _nop_();
+  42   1              _nop_();
+  43   1              i = 23;
+  44   1              j = 205;
+  45   1              k = 120;
+  46   1              do
+  47   1              {
+  48   2                      do
+  49   2                      {
+  50   3                              while (--k);
+  51   3                      } while (--j);
+  52   2              } while (--i);
+  53   1      }
+  54          
+C51 COMPILER V9.00   MAIN                                                                  07/02/2020 12:28:29 PAGE 2   
+
+  55          //-----------------------------------------
+  56          //中断服务程序
+  57          void exint0() interrupt 0       //INT0中断入口
+  58          {
+  59   1          Delay50ms();
+  60   1          if(P32==1) {first=1;P31=!P31;}
+  61   1          else if(P32==0) {final=1;P31=!P31;}
+  62   1      }
+  63          //-----------------------------------------
+  64          //中断服务程序
+  65          void exint1() interrupt 2       //INT1中断入口
+  66          {
+  67   1          Delay50ms();
+  68   1          Delay50ms();
+  69   1          if((P33==0)&&(P32==1))//这里是后改的,原来是if(P33==0)
+  70   1          {warning=1;P31=!P31;}//将测试口取反
+  71   1      }
+  72          //-----------------------------------------
+  73          //继电器操作
+  74          void SwitchRelay()//发射一个短脉冲用来开启或关闭继电器
+  75          {    
+  76   1          if(first==1){RESET=0;}
+  77   1          Delay50ms();
+  78   1          INA=!P32;
+  79   1          INB=P32;//////////////////////////////////////////////
+  80   1          Delay50ms();
+  81   1          Delay50ms();
+  82   1          Delay50ms();
+  83   1          INA=0;
+  84   1          INB=0;   //////////////////////////////////////////////
+  85   1          if(first==1){Delay1000ms();RESET=1;first=0;}
+  86   1          if(final==1) final=0;
+  87   1      }
+  88          //-----------------------------------------
+  89          //报错检测
+  90          void warn()
+  91          {
+  92   1          while(1)
+  93   1          {
+  94   2          if((P32==1)&&(warning==1)&&(P33==0))//开机状态下，触发过中断，报错脚为低
+  95   2              {
+  96   3              RESET=0;
+  97   3              Delay1000ms();
+  98   3              Delay1000ms();
+  99   3              Delay1000ms();
+ 100   3              RESET=1;
+ 101   3              Delay50ms();
+ 102   3              Delay50ms();
+ 103   3              }
+ 104   2         else
+ 105   2              {
+ 106   3              RESET=1;
+ 107   3              warning=0;
+ 108   3              break;
+ 109   3              }
+ 110   2          }
+ 111   1      }
+ 112          //-----------------------------------------
+ 113          //功放初始化
+ 114          void IntAMP()
+ 115          {
+ 116   1          Delay50ms();//强制关机一次
+C51 COMPILER V9.00   MAIN                                                                  07/02/2020 12:28:29 PAGE 3   
+
+ 117   1          INA=1;
+ 118   1          INB=0;//////////////////////////////////////////////
+ 119   1          Delay50ms();
+ 120   1          Delay50ms();
+ 121   1          Delay50ms();
+ 122   1          INA=0;
+ 123   1          INB=0;   //////////////////////////////////////////////
+ 124   1          final=0;
+ 125   1      }    
+ 126          
+ 127          //-----------------------------------------
+ 128          //判断状态
+ 129          int f(a,b,c,d)//a=P32,b=P33,c=first,d=final
+ 130          {
+ 131   1      
+ 132   1          //静止状态
+ 133   1          if(a==0&&b==1&&d==0) //没有开机信号却通着电，异常的开机，需要关机
+ 134   1          return 1;
+ 135   1          else if(a==1&&b==1)//正常的关机状态，什么也不做
+ 136   1          return 2;
+ 137   1          else if(a==0&&b==0)//正常的开机状态，什么也不做
+ 138   1          return 3;
+ 139   1      
+ 140   1          //动作状态
+ 141   1          else if(a==1&&b==0&&c==0)//带有警报的开机状态，进warn。或者是有开机信号却没开机，继电器动作
+ 142   1          return 4;
+ 143   1          else if(a==1&&b==0&&c==1)//开机
+ 144   1          return 5;
+ 145   1          else if(a==0&&b==1&&d==1)//关机
+ 146   1          return 6;
+ 147   1          else return 0;
+ 148   1      }
+ 149          //-----------------------------------------
+ 150          
+ 151          //-----------------------------------------
+ 152          void main()
+ 153          {
+ 154   1          INA=0;
+ 155   1          INB=0;//上电后立刻置低，防止误操作
+ 156   1          P31=1;
+ 157   1          P32=1;
+ 158   1          P33=1;
+ 159   1          P3M0 = 0x00;
+ 160   1          P3M1 = 00000100;//P33和P32设置为高阻态
+ 161   1      //    P3M1 = 0x00;
+ 162   1          INT1 = 1;
+ 163   1          IT1 = 1;                    //设置INT1的中断类型 (1:仅下降沿 0:上升沿和下降沿)
+ 164   1          EX1 = 1;                    //使能INT1中断
+ 165   1      
+ 166   1          INT0 = 1;
+ 167   1          IT0 = 0;                    //设置INT0的中断类型 (1:仅下降沿 0:上升沿和下降沿)
+ 168   1          EX0 = 1;                    //使能INT0中断
+ 169   1      
+ 170   1          EA = 1;
+ 171   1      
+ 172   1          RESET=1;
+ 173   1      
+ 174   1          first=0;
+ 175   1          warning=0;
+ 176   1      
+ 177   1          IntAMP();
+ 178   1      
+C51 COMPILER V9.00   MAIN                                                                  07/02/2020 12:28:29 PAGE 4   
+
+ 179   1          for(;;)
+ 180   1          {
+ 181   2              switch(f(P32,P33,first,final))
+ 182   2              {
+ 183   3                  case 1:IntAMP();Delay1000ms();break;
+ 184   3                  case 2:_nop_();break;
+ 185   3                  case 3:_nop_();break;
+ 186   3                  case 4:SwitchRelay();warn();Delay1000ms();break;
+ 187   3                  case 5:SwitchRelay();break;
+ 188   3                  case 6:SwitchRelay();warning=0;break;
+ 189   3                  default:IntAMP();Delay1000ms();break;
+ 190   3              }
+ 191   2          }
+ 192   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    453    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       8
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      3    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
