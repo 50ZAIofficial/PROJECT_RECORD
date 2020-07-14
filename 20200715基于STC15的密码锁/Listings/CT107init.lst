@@ -1,0 +1,56 @@
+C51 COMPILER V9.00   CT107INIT                                                             07/14/2020 23:58:34 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE CT107INIT
+OBJECT MODULE PLACED IN .\Objects\CT107init.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE CT107init.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\CT107init.lst) OBJECT(.\Objects\CT107init.obj)
+
+line level    source
+
+   1          #include <CT107init.h>
+   2          #include "STC15F2K60S2.h"       
+   3          #include <intrins.h>
+   4          
+   5          void CT107init()
+   6          {
+   7   1          HC138choose(5);
+   8   1          P06=0;//·äÃùÆ÷
+   9   1          P04=0;//¼ÌµçÆ÷
+  10   1          HC138choose(4);
+  11   1          P0=0xff;
+  12   1      }
+  13          void HC138choose(unsigned char dat)
+  14          {
+  15   1          switch (dat)
+  16   1          {
+  17   2              case 0 : HC138_0=0;HC138_1=0;HC138_2=0;break;
+  18   2              case 1 : HC138_0=1;HC138_1=0;HC138_2=0;break;
+  19   2              case 2 : HC138_0=0;HC138_1=1;HC138_2=0;break;
+  20   2              case 3 : HC138_0=1;HC138_1=1;HC138_2=0;break;
+  21   2              case 4 : HC138_0=0;HC138_1=0;HC138_2=1;break;
+  22   2              case 5 : HC138_0=1;HC138_1=0;HC138_2=1;break;
+  23   2              case 6 : HC138_0=0;HC138_1=1;HC138_2=1;break;
+  24   2              case 7 : HC138_0=1;HC138_1=1;HC138_2=1;break;
+  25   2          }
+  26   1      }
+  27          
+  28          void LEDbit(unsigned int LEDbiti)
+  29          {
+  30   1          HC138choose(4);
+  31   1          P0=LEDbiti;
+  32   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    111    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

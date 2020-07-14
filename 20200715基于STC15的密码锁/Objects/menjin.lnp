@@ -1,0 +1,8 @@
+".\Objects\STARTUP.obj",
+".\Objects\CT107init.obj",
+".\Objects\main.obj",
+".\Objects\smg.obj",
+".\Objects\keyboard.obj",
+".\Objects\password.obj" 
+TO ".\Objects\menjin" 
+PRINT(".\Listings\menjin.m51") RAMSIZE(256) 

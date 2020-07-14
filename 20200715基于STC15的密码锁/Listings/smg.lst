@@ -1,0 +1,82 @@
+C51 COMPILER V9.00   SMG                                                                   07/14/2020 23:58:34 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE SMG
+OBJECT MODULE PLACED IN .\Objects\smg.obj
+COMPILER INVOKED BY: D:\Keil_v5\C51\BIN\C51.EXE smg.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\smg.l
+                    -st) OBJECT(.\Objects\smg.obj)
+
+line level    source
+
+   1          #include "STC15F2K60S2.h"       
+   2          #include <intrins.h>
+   3          #include <smg.h>
+   4          #include <CT107init.h>
+   5          
+   6          unsigned char code SMG_duanma[18]=
+   7          {0xc0,0xf9,0xa4,0xb0,0x99,0x92,0x82,0xf8,0x80,0x90,0x88,0x80,0xc6,0xc0,0x86,0x8e,
+   8          0xbf,0x7f};
+   9          
+  10          void SMGdelay(unsigned int t)
+  11          {
+  12   1          while(t--);
+  13   1      }
+  14          
+  15          void SMGinit()
+  16          {
+  17   1          HC138choose(6);
+  18   1          P0=0x00;
+  19   1          HC138choose(7);
+  20   1          P0=SMG_duanma[0];
+  21   1      }
+  22          void SMGbit(unsigned char dat,unsigned char smgbit)
+  23          {
+  24   1          HC138choose(6);
+  25   1          P0= 0x01 << smgbit;
+  26   1          HC138choose(7);
+  27   1          P0= SMG_duanma[dat];
+  28   1      }
+  29          void SGMdynamic(unsigned char dat0,unsigned char dat1,
+  30          unsigned char dat2,unsigned char dat3,
+  31          unsigned char dat4,unsigned char dat5,
+  32          unsigned char dat6,unsigned char dat7)
+  33          {
+  34   1          SMGdelay(1000);
+  35   1          SMGbit(dat0,0);
+  36   1          SMGdelay(1000);
+  37   1          SMGbit(dat1,1);
+  38   1          SMGdelay(1000);
+  39   1          SMGbit(dat2,2);
+  40   1          SMGdelay(1000);
+  41   1          SMGbit(dat3,3);
+  42   1          SMGdelay(1000);
+  43   1          SMGbit(dat4,4);
+  44   1          SMGdelay(1000);
+  45   1          SMGbit(dat5,5);
+  46   1          SMGdelay(1000);
+  47   1          SMGbit(dat6,6);
+  48   1          SMGdelay(1000);
+  49   1          SMGbit(dat7,7);
+  50   1      }
+  51          
+  52          unsigned char SMGbitdata(unsigned char nowbiti,unsigned char biti,unsigned char datai)
+  53          {
+  54   1         if(biti==nowbiti){return datai;}
+C51 COMPILER V9.00   SMG                                                                   07/14/2020 23:58:34 PAGE 2   
+
+  55   1         else {return 15;}
+  56   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    170    ----
+   CONSTANT SIZE    =     18    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      10
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
